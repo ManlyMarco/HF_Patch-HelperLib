@@ -1,2 +1,2 @@
 # HF_Patch-HelperLib
-Common Utility Library for HF Patches
+Contains common utility methods for use in most of my HF Patches.
