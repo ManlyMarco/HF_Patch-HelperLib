@@ -1,3 +1,9 @@
+[Setup]
+; Copyright (C) 2026  ManlyMarco
+; This program is free software: you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
 
 [Run]
 Filename: "notepad.exe"; Parameters: """{app}\Plugin Readme.md"""; Description: "{cm:OpenPluginInfo}"; Flags: postinstall runasoriginaluser nowait skipifsilent skipifdoesntexist unchecked

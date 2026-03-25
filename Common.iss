@@ -1,7 +1,15 @@
+; Copyright (C) 2026  ManlyMarco
+; This program is free software: you can redistribute it and/or modify
+; it under the terms of the GNU General Public License as published by
+; the Free Software Foundation, either version 3 of the License, or
+; (at your option) any later version.
+
 #include "Translations.iss"
 ; Szumqcu is unique for tracking
 #define KoiDiscordLink "https://discord.gg/Szumqcu"
 #define IsDiscordLink "https://discord.gg/illusionsoft"
+; Date of compilation, not of running
+#define CurrentDate GetDateTimeString('yyyy-mm-dd', '-', ':');
 
 [Setup]
 AppPublisher=ManlyMarco
@@ -42,7 +50,102 @@ WizardSizePercent=120,150
 Source: "{#__DIR__}\bin\HelperLib.dll";   DestDir: "{app}"      ; Flags: dontcopy
 Source: "Plugin Readme.md";               DestDir: "{app}"
 
+[InstallDelete]
+; Clean up old translations
+Type: filesandordirs; Name: "{app}\BepInEx\translation"; Components: AT\TL\EnglishTranslation
+Type: filesandordirs; Name: "{app}\BepInEx\plugins\KK_Plugins\KK_TextResourceRedirector.dll"; Components: AT\TL\EnglishTranslation
+;Type: files; Name: "{app}\BepInEx\MakerLag.dll"; Components: FIX\FixCompilation
+Type: files; Name: "{app}\BepInEx\KKSceneBrowserFolders.dll"; Components: Feature\KK_BrowserFolders
+Type: files; Name: "{app}\InitSettingGameStudioVREN.exe"; Components: IllusionLaunchers
+Type: files; Name: "{app}\InitSettingEN.exe"; Components: IllusionLaunchers
+Type: files; Name: "{app}\InitSettingEnglish.exe"; Components: IllusionLaunchers
+Type: files; Name: "{app}\InitSetting EN.exe"; Components: IllusionLaunchers
+Type: files; Name: "{app}\InitSetting English.exe"; Components: IllusionLaunchers
+Type: files; Name: "{app}\InitSetting.exe"
+Type: files; Name: "{app}\InitSetting.exe.config"
+Type: files; Name: "{app}\Initial Settings.exe"
+Type: files; Name: "{app}\Initial Settings.exe.config"
+Type: filesandordirs; Name: "{app}\UserData\LauncherEN"; Components: IllusionLaunchers
+; Used by stock launcher in steam release, remove to declutter if using custom launcher
+Type: filesandordirs; Name: "{app}\ja-JP"; Components: IllusionLaunchers   
+Type: filesandordirs; Name: "{app}\zh-CN"; Components: IllusionLaunchers
+Type: filesandordirs; Name: "{app}\zh-TW"; Components: IllusionLaunchers
+
+; Need to use the steam DLC instead
+Type: filesandordirs; Name: "{app}\KoikatuVR_Data"; Check: IsSteam
+Type: files; Name: "{app}\KoikatuVR.exe"; Check: IsSteam
+
+; Clean up old modpacks
+Type: filesandordirs; Name: "{app}\mods\Sideloader Only Mods"
+Type: filesandordirs; Name: "{app}\mods\[KK]Sideloader Modpack"
+Type: filesandordirs; Name: "{app}\mods\[KK]Sideloader Modpack - Compatibility Pack"
+Type: filesandordirs; Name: "{app}\mods\[KK]Sideloader Modpack - Studio"
+Type: filesandordirs; Name: "{app}\mods\[KK]Sideloader Modpack - Fixes"
+Type: filesandordirs; Name: "{app}\mods\[EC]Sideloader Modpack"
+Type: filesandordirs; Name: "{app}\mods\[EC]Sideloader Modpack - Fixes"
+Type: filesandordirs; Name: "{app}\mods\[KK]*.7z"
+Type: filesandordirs; Name: "{app}\mods\[EC]*.7z"
+Type: filesandordirs; Name: "{app}\BepInEx\introclips"
+Type: filesandordirs; Name: "{app}\mods\[moderchan]Tongue Texture v1.1.zipmod"
+
+; Completely remove only modpacks that we fully bundle; compatibility pack is safer to be removed since it can have dupes with main modpack
+#ifndef LITE
+;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack"                      ; Components: Modpack\General
+;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Exclusive KK"       ; Components: Modpack\General
+;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Exclusive KK KKS    ; Components: Modpack\General
+;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Studio"             ; Components: Modpack\Studio
+;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Maps"               ; Components: Content\ModpackMaps
+;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Animations"         ; Components: Modpack\Animations
+#endif
+Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Compatibility Pack"
+Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Fixes"              ; Components: Modpack\Fixes
+Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - KK_MaterialEditor"  ; Components: Modpack\MaterialEditor
+Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - KK_UncensorSelector"; Components: Modpack\UncensorSelector
+Type: filesandordirs; Name: "{app}\mods\MyMods\BetterPenetration"                ; Components: Modpack\UncensorSelector
+
+; Clean up old patches and packs
+Type: files; Name: "{app}\start.bat"
+Type: files; Name: "{app}\desktop.ini"
+Type: files; Name: "{app}\*.ico"
+Type: files; Name: "{app}\[BR]*"
+
+; Always not necessary
+Type: files; Name: "{app}\0Harmony.dll"
+Type: files; Name: "{app}\BepInEx.dll"
+Type: files; Name: "{app}\Mono.Cecil.dll"
+
+; Junk
+Type: filesandordirs; Name: "{app}\BepInEx\bepinex4_backup"
+Type: filesandordirs; Name: "{app}\BepInEx_Shim_Backup"
+Type: filesandordirs; Name: "{app}\BepInEx\cache"
+Type: filesandordirs; Name: "{app}\temp"
+Type: files; Name: "{app}\README.*"
+Type: files; Name: "{app}\*.log"
+Type: files; Name: "{app}\BepInEx\*.log"
+Type: files; Name: "{app}\*.pdb"
+Type: files; Name: "{app}\changelog.txt"
+Type: files; Name: "{app}\HF_Patch_log.txt"
+Type: files; Name: "{app}\output_log.txt"
+Type: files; Name: "{app}\*_Data\output_log.txt"
+; Yikes, someone extracted a sideloader mod...
+Type: files; Name: "{app}\manifest.xml"
+
+; Just in case. Also resets any hash caches
+Type: filesandordirs; Name: "{app}\[UTILITY] KKManager"; Components: KKManager
+
+; Will get replaced, makes sure there are no stale files left
+Type: filesandordirs; Name: "{app}\BepInEx\cache"; Components: BepInEx
+Type: filesandordirs; Name: "{app}\BepInEx\core"; Components: BepInEx
+Type: files; Name: "{app}\BepInEx.Patcher.exe"; Components: BepInEx
+Type: files; Name: "{app}\version.dll"; Components: BepInEx
+Type: files; Name: "{app}\winhttp.dll"; Components: BepInEx
+Type: files; Name: "{app}\doorstop_config.ini"; Components: BepInEx
+
+; IPA, useless because patched assemblies are replaced
+Type: files; Name: "{app}\IPA.exe"
+
 [Code]
+// ---------------------------------------------------------------------- C# extern method calls
 procedure FindInstallLocation(srcPath, companyName, gameName, gameNameSteam: String; out strout: WideString);
 external 'FindInstallLocation@files:HelperLib.dll stdcall';
 
@@ -83,7 +186,19 @@ begin
   FindInstallLocation(ExpandConstant('{src}'), '{#CompanyName}', '{#GameName}', '{#GameNameSteam}', str);
   Result := str;
 end;
+   
+// ---------------------------------------------------------------------- API
 
+function OnInstallLocationTest(): Boolean; forward;
+procedure OnTasksPageOpen(); forward;
+
+procedure OnPrepKillTasks(); forward;
+procedure OnPrepDoCleanup(); forward;
+
+procedure OnInstallCompleted(); forward;
+
+// ---------------------------------------------------------------------- Event handlers
+   
 <event('NextButtonClick')>
 function NextButtonClick_Common(CurPageID: Integer): Boolean;
 var
@@ -117,8 +232,112 @@ begin
       if not (warnStr = '') then
         SuppressibleMsgBox(ExpandConstant(warnStr), mbError, MB_OK, 0);
     end;
+    
+    if Result = True then
+    begin
+        if not OnInstallLocationTest() then
+            Result := False;
+    end;
   end;
 end;
+
+<event('CurPageChanged')>
+procedure CurPageChanged_Common(CurPageID: Integer);
+begin
+  // When tasks page is opened
+  // TODO: Only trigger once?
+  if CurPageID = wpSelectTasks then
+  begin
+    OnTasksPageOpen();
+  end;
+end;
+
+<event('CurStepChanged')>
+procedure CurStepChanged_Common(CurStep: TSetupStep);
+begin
+  // After install completes
+  if CurStep = ssPostInstall then
+  begin
+    WriteVersionFile(ExpandConstant('{app}'), ExpandConstant('{src}'), '{#VERSION}');
+    OnInstallCompleted();
+  end;
+end;
+
+
+// Set up a custom prepare to install page with progress
+var
+  PrepareToInstallWithProgressPage : TOutputProgressWizardPage;
+procedure InitializeWizard;
+var
+  A: AnsiString;
+  S: String;
+begin
+  // The string msgWizardPreparing has the placeholder '[name]' inside that I have to replace with the name of my app, stored in a define constant of my script.
+  S := SetupMessage(msgPreparingDesc); 
+  StringChange(S, '[name]', '{#NAME} HF Patch');
+  A := S;
+  PrepareToInstallWithProgressPage := CreateOutputProgressPage(SetupMessage(msgWizardPreparing), A);
+end;
+
+function PrepareToInstall(var NeedsRestart: Boolean): String;
+var
+  ResultCode: Integer;
+  VerifyResult: WideString;
+begin
+  NeedsRestart := false;
+
+  PrepareToInstallWithProgressPage.Show;
+  
+  PrepareToInstallWithProgressPage.SetProgress(0, 10);
+  PrepareToInstallWithProgressPage.SetText('Verifying HF Patch files, this can take a few minutes', '');
+  
+#ifndef NOVERIFY
+  VerifyFiles(ExpandConstant('{srcexe}'), VerifyResult);
+#endif
+
+  // If verification failed, set return of this method to it and innosetup will automatically fail the install. Still need to skip rest of the code though.
+  if not (VerifyResult = '') then
+  begin
+    Result := VerifyResult;
+  end
+  else
+  begin
+    PrepareToInstallWithProgressPage.SetProgress(4, 10);
+    PrepareToInstallWithProgressPage.SetText('Exiting running game processes', '');
+    
+    OnPrepKillTasks();
+    
+    PrepareToInstallWithProgressPage.SetProgress(5, 10);
+    PrepareToInstallWithProgressPage.SetText('Fixing file permissions of game directory', '');
+
+    try
+      // Fix file permissions
+      FixPermissions(ExpandConstant('{app}'), ExpandConstant('{src}'));
+    except
+      ShowExceptionMessage();
+    end;
+
+    PrepareToInstallWithProgressPage.SetProgress(6, 10);
+    PrepareToInstallWithProgressPage.SetText('Creating a plugin backup', '');
+
+    CreateBackup(ExpandConstant('{app}'), ExpandConstant('{src}'));
+
+    PrepareToInstallWithProgressPage.SetProgress(8, 10);
+    PrepareToInstallWithProgressPage.SetText('Changing plugin configuration', '');
+    
+    DeletePluginsAndConfig(WizardIsTaskSelected('delete\Config'), WizardIsTaskSelected('delete\Plugins'));
+
+    PrepareToInstallWithProgressPage.SetProgress(9, 10);
+    PrepareToInstallWithProgressPage.SetText('Cleaning up old mods and scripts', '');
+
+    OnPrepDoCleanup();
+  end;
+  
+  PrepareToInstallWithProgressPage.SetProgress(10, 10);
+  PrepareToInstallWithProgressPage.Hide;
+end;
+
+// ---------------------------------------------------------------------- Utility methods
 
 procedure DeletePluginsAndConfig(deleteConfig, deletePlugins: Boolean);
 var 
@@ -158,6 +377,20 @@ begin
     for I := 0 to High(Params) do
     begin
       Exec('taskkill', '/F /IM ' + Params[I], ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, discard);
+    end;
+  except
+    ShowExceptionMessage();
+  end;
+end;
+
+procedure MassDeleteFile (Params: array of String);
+var
+  I: Integer;
+begin
+  try
+    for I := 0 to High(Params) do
+    begin
+      DeleteFile(ExpandConstant(Params[I]));
     end;
   except
     ShowExceptionMessage();
