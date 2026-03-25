@@ -29,28 +29,36 @@ namespace HelperLib
     {
         [DllExport("FindInstallLocation", CallingConvention = CallingConvention.StdCall)]
         [return: MarshalAs(UnmanagedType.LPWStr)]
-        public static void FindInstallLocation([MarshalAs(UnmanagedType.LPWStr)] string path, 
-                                               [MarshalAs(UnmanagedType.LPWStr)] string companyName, 
-                                               [MarshalAs(UnmanagedType.LPWStr)] string gameName, 
+        public static void FindInstallLocation([MarshalAs(UnmanagedType.LPWStr)] string srcPath,
+                                               [MarshalAs(UnmanagedType.LPWStr)] string companyName,
+                                               [MarshalAs(UnmanagedType.LPWStr)] string gameName,
                                                [MarshalAs(UnmanagedType.LPWStr)] string gameNameSteam,
                                                [MarshalAs(UnmanagedType.BStr)] out string strout)
         {
-            strout = CheckRegistryKey(path, companyName, gameName) ?? CheckRegistryKey(path, companyName, gameNameSteam);
-
-            if (strout != null) return;
-
-            try
+            if (!string.IsNullOrEmpty(companyName))
             {
-                var steamLoc = new Steam().FindAppPathIfInstalled(gameNameSteam);
-                if (Directory.Exists(steamLoc))
-                {
-                    strout = steamLoc;
-                    return;
-                }
+                strout = CheckRegistryKey(srcPath, companyName, gameName) ?? CheckRegistryKey(srcPath, companyName, gameNameSteam);
+                if (strout != null) return;
             }
-            catch (Exception e)
+
+            if (!string.IsNullOrEmpty(gameNameSteam))
             {
-                Util.AppendLog(path, e);
+                // HACK: The only game that has different Steam folder name than executable (so far)
+                if (gameNameSteam == "HoneyComeccp")
+                    gameNameSteam = "HoneyCome_come_come_party";
+                try
+                {
+                    var steamLoc = new Steam().FindAppPathIfInstalled(gameNameSteam);
+                    if (Directory.Exists(steamLoc))
+                    {
+                        strout = steamLoc;
+                        return;
+                    }
+                }
+                catch (Exception e)
+                {
+                    Util.AppendLog(srcPath, e);
+                }
             }
 
             try
@@ -62,9 +70,9 @@ namespace HelperLib
                     }
                     .Concat(DriveInfo.GetDrives().AttemptMany(x => x.RootDirectory.GetDirectories()))
                     .AttemptMany(x => x.GetDirectories())
-                    .Where(y => y.Name.Contains(gameNameSteam) || y.Name.Contains(gameName))
+                    .Where(y => y.Name.Contains(gameName))
                     .AttemptMany(x => x.GetFiles())
-                    .FirstOrDefault(y => y.Name.Contains(gameNameSteam) || y.Name.Contains(gameName));
+                    .FirstOrDefault(y => y.Name.Contains(gameName));
                 if (Directory.Exists(bruteForcePath?.FullName))
                 {
                     strout = bruteForcePath.DirectoryName;
@@ -73,14 +81,16 @@ namespace HelperLib
             }
             catch (Exception e)
             {
-                Util.AppendLog(path, e);
+                Util.AppendLog(srcPath, e);
             }
 
             strout = "C:\\Path to the installed game";
         }
 
-        private static string CheckRegistryKey(string path, string companyName, string gameName)
+        private static string CheckRegistryKey(string srcPath, string companyName, string gameName)
         {
+            if (string.IsNullOrEmpty(companyName) || string.IsNullOrEmpty(gameName)) return null;
+
             try
             {
                 var subKey = Registry.CurrentUser.OpenSubKey($@"Software\{companyName}\{gameName}");
@@ -101,10 +111,124 @@ namespace HelperLib
             }
             catch (Exception e)
             {
-                Util.AppendLog(path, e);
+                Util.AppendLog(srcPath, e);
             }
 
             return null;
+        }
+
+        [DllExport("TestInstallLocation", CallingConvention = CallingConvention.StdCall)]
+        [return: MarshalAs(UnmanagedType.LPWStr)]
+        public static void TestInstallLocation(
+            [MarshalAs(UnmanagedType.LPWStr)] string appPath,
+            [MarshalAs(UnmanagedType.LPWStr)] string srcPath,
+            [MarshalAs(UnmanagedType.LPWStr)] string gameName,
+            [MarshalAs(UnmanagedType.LPWStr)] string gameNameSteam,
+            [MarshalAs(UnmanagedType.BStr)] out string errorStr,
+            [MarshalAs(UnmanagedType.BStr)] out string warnStr)
+        {
+            warnStr = null;
+            errorStr = null;
+
+            try
+            {
+                srcPath = Path.GetFullPath(srcPath);
+                appPath = Path.GetFullPath(appPath);
+
+                if (srcPath.StartsWith(appPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    errorStr = "This patch is inside of the game directory you are attempting to install to.\n\nYou have to move the patch files outside of the game directory and try again.";
+                    return;
+                }
+
+                var files = Directory.GetFiles(appPath, "*.exe", SearchOption.TopDirectoryOnly).Select(Path.GetFileNameWithoutExtension).ToList();
+
+                var allGameExes = new List<string>()
+                {
+                    // Illusion
+                    "Koikatu",
+                    "Koikatsu Party",
+                    "KoikatsuSunshine",
+                    "EmotionCreators",
+                    "PlayHome",
+                    "AI-Syoujyo",
+                    "AI-Shoujo",
+                    "HoneySelect",
+                    "HoneySelect2",
+                    "RoomGirl",
+                    "VR_Kanojo",
+                    // Miconisomi
+                    "AGH",
+                    "IO",
+                    "SummerInHeat",
+                    "『夏のサカり』起動ランチャー", // SummerInHeat launcher
+                    // Other
+                    "VR-Kanojo",
+                    "KoiKoiMonogatari",
+                    "KoiKoiMonogatariVR",
+                    "DatsuiJanken",
+                    // Illgames
+                    "HoneyCome",
+                    "HoneyComeccp",
+                    "SamabakeScramble",
+                    "Aicomi"
+                };
+
+                if (!files.Contains(gameName, StringComparer.OrdinalIgnoreCase) && (string.IsNullOrEmpty(gameNameSteam) || !files.Contains(gameNameSteam, StringComparer.OrdinalIgnoreCase)))
+                {
+                    errorStr = $"{{cm:MsgExeNotFound}} \n\nExpected executable name: {gameName}";
+                    if (!string.IsNullOrEmpty(gameNameSteam))
+                        errorStr += $" or {gameNameSteam}";
+                    return;
+                }
+
+                allGameExes.RemoveAll(x => x.Equals(gameName, StringComparison.OrdinalIgnoreCase) || x.Equals(gameNameSteam, StringComparison.OrdinalIgnoreCase));
+
+                var conflicts = files.Where(x => allGameExes.Contains(x, StringComparer.OrdinalIgnoreCase)).ToList();
+                if (conflicts.Count > 0)
+                {
+                    errorStr = $"It looks like a different game is installed to the selected directory: {string.Join(", ", conflicts)}\n\nThis is very likely to break one or both of the games, and to break the patch.\n\nMake sure you selected the correct directory, and that you downloaded the correct patch for your game.\n\nIf you installed 2 games to the same directory you will have to reinstall them both to separate directories to fix this.";
+                    return;
+                }
+
+                // Check if path length is too long (> 100 characters)
+                if (appPath.Length > 100)
+                {
+                    errorStr = "{cm:MsgPathTooLong} \n\nPath: " + appPath;
+                    return;
+                }
+
+                bool IsPathValid(string value)
+                {
+                    if (string.IsNullOrEmpty(value))
+                        return false;
+
+                    foreach (var c in value)
+                    {
+                        // Only allow ASCII
+                        if (c > 0x007F)
+                            return false;
+                    }
+
+                    return true;
+                }
+
+                if (!IsPathValid(appPath))
+                {
+                    if (warnStr != null) warnStr += "\n\n";
+                    warnStr += "{cm:MsgPathNonLatin}";
+                }
+
+                if (File.Exists(Path.Combine(appPath, "manifest.xml")))
+                {
+                    if (warnStr != null) warnStr += "\n\n";
+                    warnStr += "{cm:MsgExtractedZipmod}";
+                }
+            }
+            catch (Exception e)
+            {
+                Util.AppendLog(appPath, e);
+            }
         }
 
         [DllExport("VerifyFiles", CallingConvention = CallingConvention.StdCall)]
@@ -114,9 +238,11 @@ namespace HelperLib
         }
 
         [DllExport("WriteVersionFile", CallingConvention = CallingConvention.StdCall)]
-        public static void WriteVersionFile([MarshalAs(UnmanagedType.LPWStr)] string path, [MarshalAs(UnmanagedType.LPWStr)] string version)
+        public static void WriteVersionFile([MarshalAs(UnmanagedType.LPWStr)] string appPath,
+                                            [MarshalAs(UnmanagedType.LPWStr)] string srcPath,
+                                            [MarshalAs(UnmanagedType.LPWStr)] string version)
         {
-            var verPath = Path.Combine(path, @"version");
+            var verPath = Path.Combine(appPath, @"version");
             try
             {
                 // Prevent exception when overwriting hidden file
@@ -126,15 +252,16 @@ namespace HelperLib
             }
             catch (Exception e)
             {
-                Util.AppendLog(path, "Failed trying to write version file: " + e);
+                Util.AppendLog(srcPath, "Failed trying to write version file: " + e);
             }
         }
 
         [DllExport("FixConfigIllusion", CallingConvention = CallingConvention.StdCall)]
         [SuppressMessage("ReSharper", "PossibleNullReferenceException")]
-        public static void FixConfigIllusion([MarshalAs(UnmanagedType.LPWStr)] string path)
+        public static void FixConfigIllusion([MarshalAs(UnmanagedType.LPWStr)] string appPath,
+                                             [MarshalAs(UnmanagedType.LPWStr)] string srcPath)
         {
-            var ud = Path.Combine(path, @"UserData\setup.xml");
+            var ud = Path.Combine(appPath, @"UserData\setup.xml");
 
             try
             {
@@ -179,19 +306,20 @@ namespace HelperLib
   <Language>0</Language>
 </Setting>", Encoding.Unicode);
 
-                    if (!(e is FileNotFoundException)) Util.AppendLog(path, @"Fixed corrupted " + ud + "; Cause:" + e.Message);
+                    if (!(e is FileNotFoundException)) Util.AppendLog(srcPath, @"Fixed corrupted " + ud + "; Cause:" + e.Message);
                 }
                 catch (Exception ex)
                 {
-                    Util.AppendLog(path, @"Failed to fix corrupted " + ud + "; Cause:" + ex);
+                    Util.AppendLog(srcPath, @"Failed to fix corrupted " + ud + "; Cause:" + ex);
                 }
             }
         }
 
         [DllExport("FixConfigKoikatsu", CallingConvention = CallingConvention.StdCall)]
-        public static void FixConfigKoikatsu([MarshalAs(UnmanagedType.LPWStr)] string path)
+        public static void FixConfigKoikatsu([MarshalAs(UnmanagedType.LPWStr)] string appPath,
+                                             [MarshalAs(UnmanagedType.LPWStr)] string srcPath)
         {
-            var sysDir = Path.Combine(path, @"UserData\config\system.xml");
+            var sysDir = Path.Combine(appPath, @"UserData\config\system.xml");
             try
             {
                 using (var reader = File.OpenRead(sysDir))
@@ -226,28 +354,29 @@ namespace HelperLib
                 {
                     File.Delete(sysDir);
 
-                    if (!(e is FileNotFoundException)) Util.AppendLog(path, @"Reset corrupted " + sysDir + Environment.NewLine + e + Environment.NewLine);
+                    if (!(e is FileNotFoundException)) Util.AppendLog(srcPath, @"Reset corrupted " + sysDir + Environment.NewLine + e + Environment.NewLine);
                 }
                 catch (Exception ex)
                 {
-                    Util.AppendLog(path, @"Failed to reset corrupted " + sysDir + Environment.NewLine + ex + Environment.NewLine);
+                    Util.AppendLog(srcPath, @"Failed to reset corrupted " + sysDir + Environment.NewLine + ex + Environment.NewLine);
                 }
             }
         }
 
         [DllExport("FixPermissions", CallingConvention = CallingConvention.StdCall)]
-        public static void FixPermissions([MarshalAs(UnmanagedType.LPWStr)] string path)
+        public static void FixPermissions([MarshalAs(UnmanagedType.LPWStr)] string appPath,
+                                          [MarshalAs(UnmanagedType.LPWStr)] string srcPath)
         {
             try
             {
-                ProcessWaiter.CheckForProcessesBlockingDir(Path.GetFullPath(path)).ConfigureAwait(false).GetAwaiter().GetResult();
+                ProcessWaiter.CheckForProcessesBlockingDir(Path.GetFullPath(appPath)).ConfigureAwait(false).GetAwaiter().GetResult();
 
                 var batContents = $@"
 title Fixing permissions... 
 rem Get the localized version of Y/N to pass to takeown to make this work in different locales
 for /f ""tokens=1,2 delims=[,]"" %%a in ('""choice <nul 2>nul""') do set ""yes=%%a"" & set ""no=%%b""
 echo Press %yes% for yes and %no% for no
-set target={path.Trim(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar, ' ')}
+set target={appPath.Trim(Path.AltDirectorySeparatorChar, Path.DirectorySeparatorChar, ' ')}
 echo off
 cls
 echo Taking ownership of %target% ...
@@ -261,20 +390,21 @@ icacls ""%target%"" /grant *S-1-1-0:(OI)(CI)F /T /C /L /Q
                 File.WriteAllText(batPath, batContents);
 
                 Process.Start(new ProcessStartInfo("cmd", $"/C \"{batPath}\"")
-                { WindowStyle = ProcessWindowStyle.Hidden, CreateNoWindow = true });
+                { WindowStyle = ProcessWindowStyle.Hidden, CreateNoWindow = true, UseShellExecute = true });
             }
             catch (Exception ex)
             {
-                Util.AppendLog(path, "Failed to fix permissions: " + ex);
+                Util.AppendLog(srcPath, "Failed to fix permissions: " + ex);
             }
         }
 
         [DllExport("CreateBackup", CallingConvention = CallingConvention.StdCall)]
-        public static void CreateBackup([MarshalAs(UnmanagedType.LPWStr)] string path)
+        public static void CreateBackup([MarshalAs(UnmanagedType.LPWStr)] string appPath,
+                                        [MarshalAs(UnmanagedType.LPWStr)] string srcPath)
         {
             try
             {
-                var fullPath = Path.GetFullPath(path);
+                var fullPath = Path.GetFullPath(appPath);
                 var filesToBackup = new List<string>();
 
                 var bepinPath = Path.Combine(fullPath, "BepInEx");
@@ -323,37 +453,38 @@ icacls ""%target%"" /grant *S-1-1-0:(OI)(CI)F /T /C /L /Q
                         }
                         catch (Exception ex)
                         {
-                            Util.AppendLog(path, $"Failed to add file {toAdd} to backup - {ex}");
+                            Util.AppendLog(srcPath, $"Failed to add file {toAdd} to backup - {ex}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Util.AppendLog(path, $"Failed to create backup - {ex}");
+                Util.AppendLog(srcPath, $"Failed to create backup - {ex}");
             }
         }
 
         [DllExport("RemoveModsExceptModpacks", CallingConvention = CallingConvention.StdCall)]
-        public static void RemoveModsExceptModpacks([MarshalAs(UnmanagedType.LPWStr)] string path)
+        public static void RemoveModsExceptModpacks([MarshalAs(UnmanagedType.LPWStr)] string appPath,
+                                                    [MarshalAs(UnmanagedType.LPWStr)] string srcPath)
         {
             try
             {
-                var modsPath = Path.GetFullPath(Path.Combine(path, "mods"));
+                var modsPath = Path.GetFullPath(Path.Combine(appPath, "mods"));
                 if (!Directory.Exists(modsPath)) return;
 
                 // Move all mods except the ones in acceptableDirs to the backup folder. Combine with any existing backup to save space
-                var backupPath = Path.Combine(path, "mods_BACKUP");
+                var backupPath = Path.Combine(appPath, "mods_BACKUP");
 
                 // Only top files
-                MoveDirectory(modsPath, backupPath, SearchOption.TopDirectoryOnly, path);
+                MoveDirectory(modsPath, backupPath, SearchOption.TopDirectoryOnly, appPath);
 
                 // Non modpack subdirectories
                 foreach (var subdir in new DirectoryInfo(modsPath).GetDirectories())
                 {
                     if (subdir.Name.StartsWith("Sideloader Modpack", StringComparison.OrdinalIgnoreCase)) continue;
 
-                    MoveDirectory(subdir.FullName, Path.Combine(backupPath, subdir.Name), SearchOption.AllDirectories, path);
+                    MoveDirectory(subdir.FullName, Path.Combine(backupPath, subdir.Name), SearchOption.AllDirectories, appPath);
 
                     subdir.Refresh();
                     if (!subdir.Exists) continue;
@@ -367,14 +498,14 @@ icacls ""%target%"" /grant *S-1-1-0:(OI)(CI)F /T /C /L /Q
                         }
                         catch (Exception ex)
                         {
-                            Util.AppendLog(path, $"Failed to remove file {file} - {ex}");
+                            Util.AppendLog(srcPath, $"Failed to remove file {file} - {ex}");
                         }
                     }
                 }
             }
             catch (Exception ex)
             {
-                Util.AppendLog(path, $"Failed to remove old mods from the mods directory - {ex}");
+                Util.AppendLog(srcPath, $"Failed to remove old mods from the mods directory - {ex}");
             }
 
             // Taken from https://stackoverflow.com/a/2553245
@@ -418,11 +549,12 @@ icacls ""%target%"" /grant *S-1-1-0:(OI)(CI)F /T /C /L /Q
 
 
         [DllExport("RemoveNonstandardListfiles", CallingConvention = CallingConvention.StdCall)]
-        public static void RemoveNonstandardListfiles([MarshalAs(UnmanagedType.LPWStr)] string path)
+        public static void RemoveNonstandardListfiles([MarshalAs(UnmanagedType.LPWStr)] string appPath,
+                                                      [MarshalAs(UnmanagedType.LPWStr)] string srcPath)
         {
             try
             {
-                var ld = Path.Combine(path, @"abdata\list\characustom");
+                var ld = Path.Combine(appPath, @"abdata\list\characustom");
                 if (Directory.Exists(ld))
                 {
                     foreach (var filePath in Directory.GetFiles(ld))
@@ -431,7 +563,7 @@ icacls ""%target%"" /grant *S-1-1-0:(OI)(CI)F /T /C /L /Q
                     }
                 }
 
-                var hld = Path.Combine(path, @"abdata\h\list");
+                var hld = Path.Combine(appPath, @"abdata\h\list");
                 if (Directory.Exists(hld))
                 {
                     foreach (var filePath in Directory.GetFiles(hld))
@@ -440,7 +572,7 @@ icacls ""%target%"" /grant *S-1-1-0:(OI)(CI)F /T /C /L /Q
                     }
                 }
 
-                var sld = Path.Combine(path, @"abdata\studio\info");
+                var sld = Path.Combine(appPath, @"abdata\studio\info");
                 if (Directory.Exists(sld))
                 {
                     foreach (var filePath in Directory.GetFiles(sld))
@@ -451,7 +583,7 @@ icacls ""%target%"" /grant *S-1-1-0:(OI)(CI)F /T /C /L /Q
             }
             catch (Exception e)
             {
-                Util.AppendLog(path, e);
+                Util.AppendLog(srcPath, e);
             }
 
             bool IsStandardListFile(string fileName)
@@ -476,17 +608,18 @@ icacls ""%target%"" /grant *S-1-1-0:(OI)(CI)F /T /C /L /Q
         }
 
         [DllExport("RemoveSideloaderDuplicates", CallingConvention = CallingConvention.StdCall)]
-        public static void RemoveSideloaderDuplicates([MarshalAs(UnmanagedType.LPWStr)] string path)
+        public static void RemoveSideloaderDuplicates([MarshalAs(UnmanagedType.LPWStr)] string appPath,
+                                                      [MarshalAs(UnmanagedType.LPWStr)] string srcPath)
         {
             try
             {
-                var allMods = ZipmodTools.GetAllZipmods(path);
+                var allMods = ZipmodTools.GetAllZipmods(appPath);
                 SideloaderCleanupByManifest(allMods);
                 //SideloaderCleanupByFilename(allMods.Where(File.Exists));
             }
             catch (Exception e)
             {
-                Util.AppendLog(path, e);
+                Util.AppendLog(srcPath, e);
             }
         }
 
