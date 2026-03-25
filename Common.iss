@@ -208,7 +208,13 @@ begin
   // After install completes
   if CurStep = ssPostInstall then
   begin
-    WriteVersionFile(ExpandConstant('{app}'), ExpandConstant('{src}'), '{#VERSION}');
+    try
+      WriteVersionFile(ExpandConstant('{app}'), ExpandConstant('{src}'), '{#VERSION}');
+      DeleteFile(ExpandConstant('{app}\changelog.txt'));
+    except
+      ShowExceptionMessage();
+    end;
+    
     OnInstallCompleted();
   end;
 end;
