@@ -51,58 +51,6 @@ Source: "{#__DIR__}\bin\HelperLib.dll";   DestDir: "{app}"      ; Flags: dontcop
 Source: "Plugin Readme.md";               DestDir: "{app}"
 
 [InstallDelete]
-; Clean up old translations
-Type: filesandordirs; Name: "{app}\BepInEx\translation"; Components: AT\TL\EnglishTranslation
-Type: filesandordirs; Name: "{app}\BepInEx\plugins\KK_Plugins\KK_TextResourceRedirector.dll"; Components: AT\TL\EnglishTranslation
-;Type: files; Name: "{app}\BepInEx\MakerLag.dll"; Components: FIX\FixCompilation
-Type: files; Name: "{app}\BepInEx\KKSceneBrowserFolders.dll"; Components: Feature\KK_BrowserFolders
-Type: files; Name: "{app}\InitSettingGameStudioVREN.exe"; Components: IllusionLaunchers
-Type: files; Name: "{app}\InitSettingEN.exe"; Components: IllusionLaunchers
-Type: files; Name: "{app}\InitSettingEnglish.exe"; Components: IllusionLaunchers
-Type: files; Name: "{app}\InitSetting EN.exe"; Components: IllusionLaunchers
-Type: files; Name: "{app}\InitSetting English.exe"; Components: IllusionLaunchers
-Type: files; Name: "{app}\InitSetting.exe"
-Type: files; Name: "{app}\InitSetting.exe.config"
-Type: files; Name: "{app}\Initial Settings.exe"
-Type: files; Name: "{app}\Initial Settings.exe.config"
-Type: filesandordirs; Name: "{app}\UserData\LauncherEN"; Components: IllusionLaunchers
-; Used by stock launcher in steam release, remove to declutter if using custom launcher
-Type: filesandordirs; Name: "{app}\ja-JP"; Components: IllusionLaunchers   
-Type: filesandordirs; Name: "{app}\zh-CN"; Components: IllusionLaunchers
-Type: filesandordirs; Name: "{app}\zh-TW"; Components: IllusionLaunchers
-
-; Need to use the steam DLC instead
-Type: filesandordirs; Name: "{app}\KoikatuVR_Data"; Check: IsSteam
-Type: files; Name: "{app}\KoikatuVR.exe"; Check: IsSteam
-
-; Clean up old modpacks
-Type: filesandordirs; Name: "{app}\mods\Sideloader Only Mods"
-Type: filesandordirs; Name: "{app}\mods\[KK]Sideloader Modpack"
-Type: filesandordirs; Name: "{app}\mods\[KK]Sideloader Modpack - Compatibility Pack"
-Type: filesandordirs; Name: "{app}\mods\[KK]Sideloader Modpack - Studio"
-Type: filesandordirs; Name: "{app}\mods\[KK]Sideloader Modpack - Fixes"
-Type: filesandordirs; Name: "{app}\mods\[EC]Sideloader Modpack"
-Type: filesandordirs; Name: "{app}\mods\[EC]Sideloader Modpack - Fixes"
-Type: filesandordirs; Name: "{app}\mods\[KK]*.7z"
-Type: filesandordirs; Name: "{app}\mods\[EC]*.7z"
-Type: filesandordirs; Name: "{app}\BepInEx\introclips"
-Type: filesandordirs; Name: "{app}\mods\[moderchan]Tongue Texture v1.1.zipmod"
-
-; Completely remove only modpacks that we fully bundle; compatibility pack is safer to be removed since it can have dupes with main modpack
-#ifndef LITE
-;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack"                      ; Components: Modpack\General
-;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Exclusive KK"       ; Components: Modpack\General
-;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Exclusive KK KKS    ; Components: Modpack\General
-;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Studio"             ; Components: Modpack\Studio
-;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Maps"               ; Components: Content\ModpackMaps
-;Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Animations"         ; Components: Modpack\Animations
-#endif
-Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Compatibility Pack"
-Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - Fixes"              ; Components: Modpack\Fixes
-Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - KK_MaterialEditor"  ; Components: Modpack\MaterialEditor
-Type: filesandordirs; Name: "{app}\mods\Sideloader Modpack - KK_UncensorSelector"; Components: Modpack\UncensorSelector
-Type: filesandordirs; Name: "{app}\mods\MyMods\BetterPenetration"                ; Components: Modpack\UncensorSelector
-
 ; Clean up old patches and packs
 Type: files; Name: "{app}\start.bat"
 Type: files; Name: "{app}\desktop.ini"
@@ -129,9 +77,6 @@ Type: files; Name: "{app}\output_log.txt"
 Type: files; Name: "{app}\*_Data\output_log.txt"
 ; Yikes, someone extracted a sideloader mod...
 Type: files; Name: "{app}\manifest.xml"
-
-; Just in case. Also resets any hash caches
-Type: filesandordirs; Name: "{app}\[UTILITY] KKManager"; Components: KKManager
 
 ; Will get replaced, makes sure there are no stale files left
 Type: filesandordirs; Name: "{app}\BepInEx\cache"; Components: BepInEx
@@ -278,6 +223,8 @@ begin
   A := S;
   PrepareToInstallWithProgressPage := CreateOutputProgressPage(SetupMessage(msgWizardPreparing), A);
 end;
+
+procedure DeletePluginsAndConfig(deleteConfig, deletePlugins: Boolean); forward;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
