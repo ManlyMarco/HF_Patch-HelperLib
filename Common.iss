@@ -79,12 +79,17 @@ Type: files; Name: "{app}\*_Data\output_log.txt"
 Type: files; Name: "{app}\manifest.xml"
 
 ; Will get replaced, makes sure there are no stale files left
-Type: filesandordirs; Name: "{app}\BepInEx\cache"; Components: BepInEx
-Type: filesandordirs; Name: "{app}\BepInEx\core"; Components: BepInEx
-Type: files; Name: "{app}\BepInEx.Patcher.exe"; Components: BepInEx
-Type: files; Name: "{app}\version.dll"; Components: BepInEx
-Type: files; Name: "{app}\winhttp.dll"; Components: BepInEx
-Type: files; Name: "{app}\doorstop_config.ini"; Components: BepInEx
+Type: filesandordirs; Name: "{app}\BepInEx\cache";       Components: BepInEx
+Type: filesandordirs; Name: "{app}\BepInEx\core";        Components: BepInEx
+Type: files;          Name: "{app}\BepInEx.Patcher.exe"; Components: BepInEx
+Type: files;          Name: "{app}\version.dll";         Components: BepInEx
+Type: files;          Name: "{app}\winhttp.dll";         Components: BepInEx
+Type: files;          Name: "{app}\doorstop_config.ini"; Components: BepInEx
+; BepInEx 6
+Type: filesandordirs; Name: "{app}\BepInEx\dummy";       Components: BepInEx
+Type: filesandordirs; Name: "{app}\BepInEx\unhollowed";  Components: BepInEx
+Type: filesandordirs; Name: "{app}\BepInEx\unity-libs";  Components: BepInEx
+Type: filesandordirs; Name: "{app}\dotnet";              Components: BepInEx
 
 ; IPA, useless because patched assemblies are replaced
 Type: files; Name: "{app}\IPA.exe"
@@ -131,7 +136,7 @@ begin
   FindInstallLocation(ExpandConstant('{src}'), '{#CompanyName}', '{#GameName}', '{#GameNameSteam}', str);
   Result := str;
 end;
-   
+
 // ---------------------------------------------------------------------- API
 
 function OnInstallLocationTest(): Boolean; forward;
@@ -228,7 +233,6 @@ procedure DeletePluginsAndConfig(deleteConfig, deletePlugins: Boolean); forward;
 
 function PrepareToInstall(var NeedsRestart: Boolean): String;
 var
-  ResultCode: Integer;
   VerifyResult: WideString;
 begin
   NeedsRestart := false;

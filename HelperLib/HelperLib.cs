@@ -181,9 +181,9 @@ namespace HelperLib
 
                 if (!files.Contains(gameName, StringComparer.OrdinalIgnoreCase) && (string.IsNullOrEmpty(gameNameSteam) || !files.Contains(gameNameSteam, StringComparer.OrdinalIgnoreCase)))
                 {
-                    errorStr = $"{{cm:MsgExeNotFound}} \n\nExpected executable name: {gameName}";
-                    if (!string.IsNullOrEmpty(gameNameSteam))
-                        errorStr += $" or {gameNameSteam}";
+                    errorStr = $"{{cm:MsgExeNotFound}} \n\nExpected executable name: {gameName}.exe";
+                    if (!string.IsNullOrEmpty(gameNameSteam) && gameName != gameNameSteam)
+                        errorStr += $" or {gameNameSteam}.exe";
                     return;
                 }
 
@@ -575,31 +575,22 @@ icacls ""%target%"" /grant *S-1-1-0:(OI)(CI)F /T /C /L /Q
         {
             try
             {
-                var ld = Path.Combine(appPath, @"abdata\list\characustom");
-                if (Directory.Exists(ld))
-                {
-                    foreach (var filePath in Directory.GetFiles(ld))
-                    {
-                        if (!IsStandardListFile(filePath)) Util.SafeFileDelete(filePath);
-                    }
-                }
+                var listFileDirs = new[] {
+                    @"abdata\list\characustom", // All games
+                    @"abdata\h\list",           // KK,EC,KKS
+                    @"abdata\studio\info",      // Illusion studio
+                    @"abdata\craft\info",       // Illgames studio
+                    @"lib\list\characustom",    // Aicomi
+                };
 
-                var hld = Path.Combine(appPath, @"abdata\h\list");
-                if (Directory.Exists(hld))
-                {
-                    foreach (var filePath in Directory.GetFiles(hld))
-                    {
-                        if (!IsStandardListFile(filePath)) Util.SafeFileDelete(filePath);
-                    }
-                }
+                var allListFiles = listFileDirs.Select(p => Path.Combine(appPath, p))
+                                               .Where(Directory.Exists)
+                                               .SelectMany(Directory.GetFiles);
 
-                var sld = Path.Combine(appPath, @"abdata\studio\info");
-                if (Directory.Exists(sld))
+                foreach (var filePath in allListFiles)
                 {
-                    foreach (var filePath in Directory.GetFiles(sld))
-                    {
-                        if (!IsStandardListFile(filePath)) Util.SafeFileDelete(filePath);
-                    }
+                    if (!IsStandardListFile(filePath))
+                        Util.SafeFileDelete(filePath);
                 }
             }
             catch (Exception e)
