@@ -93,7 +93,12 @@ namespace HelperLib
 
             try
             {
-                var subKey = Registry.CurrentUser.OpenSubKey($@"Software\{companyName}\{gameName}");
+                var keyName = $@"Software\{companyName}\{gameName}";
+
+                if (companyName.Equals("Illusion", StringComparison.OrdinalIgnoreCase))
+                    keyName += $@"\{gameName}";
+
+                var subKey = Registry.CurrentUser.OpenSubKey(keyName);
                 if (subKey != null)
                 {
                     var regDir = subKey.GetValue("INSTALLDIR_HFP")?.ToString();
@@ -354,7 +359,7 @@ namespace HelperLib
                             graphic.SetElementValue("rampId", "0");
                         if (!int.TryParse(etc.Element("rampHId")?.Value, out var resh) || resh > 1000000)
                             graphic.SetElementValue("rampHId", "0");
-                        
+
                         h.SetElementValue("SemenType", "1");
                     }
 
