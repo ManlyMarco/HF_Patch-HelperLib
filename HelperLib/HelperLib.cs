@@ -331,16 +331,32 @@ namespace HelperLib
                     etc.SetElementValue("loadAllAccessory", "True");
                     etc.SetElementValue("SemenType", "1");
 
-                    // Reset shadow type if it's invalid
-                    if (!int.TryParse(etc.Element("rampId")?.Value, out var res) || res > 1000000)
-                        etc.SetElementValue("rampId", "0");
+                    var add = sysConfig.Root.Element("Add");
+                    var h = sysConfig.Root?.Element("H");
+                    if (add == null && h == null) throw new Exception();
 
-                    var add = sysConfig.Root.Element("Add") ?? throw new Exception();
-                    add.SetElementValue("TalkTimeNoneWalkStop", "True");
-                    add.SetElementValue("OtherClassRegisterMax", "True");
-                    add.SetElementValue("AINotPlayerTarget", "False");
-                    add.SetElementValue("AINotPlayerTargetCommunication", "True");
-                    add.SetElementValue("AIActionCorrectionH", "30");
+                    if (add != null) // KK
+                    {
+                        // Reset shadow type if it's invalid
+                        if (!int.TryParse(etc.Element("rampId")?.Value, out var res) || res > 1000000)
+                            etc.SetElementValue("rampId", "0");
+                        add.SetElementValue("TalkTimeNoneWalkStop", "True");
+                        add.SetElementValue("OtherClassRegisterMax", "True");
+                        add.SetElementValue("AINotPlayerTarget", "False");
+                        add.SetElementValue("AINotPlayerTargetCommunication", "True");
+                        add.SetElementValue("AIActionCorrectionH", "30");
+                    }
+                    else // KKS
+                    {
+                        // Reset shadow type if it's invalid
+                        var graphic = sysConfig.Root?.Element("Graphic") ?? throw new Exception();
+                        if (!int.TryParse(etc.Element("rampId")?.Value, out var res) || res > 1000000)
+                            graphic.SetElementValue("rampId", "0");
+                        if (!int.TryParse(etc.Element("rampHId")?.Value, out var resh) || resh > 1000000)
+                            graphic.SetElementValue("rampHId", "0");
+                        
+                        h.SetElementValue("SemenType", "1");
+                    }
 
                     // Close the reader to allow overwriting the file
                     // ReSharper disable once DisposeOnUsingVariable
