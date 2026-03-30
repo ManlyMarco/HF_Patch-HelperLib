@@ -94,6 +94,11 @@ Type: filesandordirs; Name: "{app}\dotnet";              Components: BepInEx
 ; IPA, useless because patched assemblies are replaced
 Type: files; Name: "{app}\IPA.exe"
 
+; Someone tried using Reipatcher to install AT
+Type: filesandordirs; Name: "{app}\ReiPatcher"
+Type: files;          Name: "{app}\SetupReiPatcherAndAutoTranslator.exe"
+Type: files;          Name: "{app}\*(Patch and Run).lnk"
+
 [Code]
 // ---------------------------------------------------------------------- C# extern method calls
 procedure FindInstallLocation(srcPath, companyName, gameName, gameNameSteam: String; out strout: WideString);
