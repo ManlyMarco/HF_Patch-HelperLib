@@ -137,8 +137,8 @@ namespace HelperLib
 
             try
             {
-                srcPath = Path.GetFullPath(srcPath);
-                appPath = Path.GetFullPath(appPath);
+                srcPath = Path.GetFullPath(srcPath + Path.PathSeparator);
+                appPath = Path.GetFullPath(appPath + Path.PathSeparator);
 
                 if (srcPath.StartsWith(appPath, StringComparison.OrdinalIgnoreCase))
                 {
