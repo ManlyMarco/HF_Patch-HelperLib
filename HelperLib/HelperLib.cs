@@ -45,7 +45,14 @@ namespace HelperLib
             {
                 // HACK: The only game that has different Steam folder name than executable (so far)
                 if (gameNameSteam == "HoneyComeccp")
+                {
+                    // HACK: Also need to handle DC somehow
+                    FindInstallLocation(srcPath, companyName, "DigitalCraft", "", out strout);
+                    if (strout != null)
+                        return;
                     gameNameSteam = "HoneyCome_come_come_party";
+                }
+
                 try
                 {
                     var steamLoc = new Steam().FindAppPathIfInstalled(gameNameSteam);
@@ -179,6 +186,9 @@ namespace HelperLib
                     "Aicomi"
                 };
 
+                if (gameName.Equals("HoneyCome") && File.Exists(Path.Combine(appPath, "DigitalCraft\\DigitalCraft.exe")))
+                    goto OverrideGameName;
+
                 if (!files.Contains(gameName, StringComparer.OrdinalIgnoreCase) && (string.IsNullOrEmpty(gameNameSteam) || !files.Contains(gameNameSteam, StringComparer.OrdinalIgnoreCase)))
                 {
                     errorStr = $"{{cm:MsgExeNotFound}} \n\nExpected executable name: {gameName}.exe";
@@ -186,6 +196,8 @@ namespace HelperLib
                         errorStr += $" or {gameNameSteam}.exe";
                     return;
                 }
+
+            OverrideGameName:
 
                 allGameExes.RemoveAll(x => x.Equals(gameName, StringComparison.OrdinalIgnoreCase) || x.Equals(gameNameSteam, StringComparison.OrdinalIgnoreCase));
 
