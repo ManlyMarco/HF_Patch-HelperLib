@@ -35,41 +35,42 @@ namespace HelperLib
                                                [MarshalAs(UnmanagedType.LPWStr)] string gameNameSteam,
                                                [MarshalAs(UnmanagedType.BStr)] out string strout)
         {
-            if (!string.IsNullOrEmpty(companyName))
-            {
-                strout = CheckRegistryKey(srcPath, companyName, gameName) ?? CheckRegistryKey(srcPath, companyName, gameNameSteam);
-                if (strout != null) return;
-            }
-
-            if (!string.IsNullOrEmpty(gameNameSteam))
-            {
-                // HACK: The only game that has different Steam folder name than executable (so far)
-                if (gameNameSteam == "HoneyComeccp")
-                {
-                    // HACK: Also need to handle DC somehow
-                    FindInstallLocation(srcPath, companyName, "DigitalCraft", "", out strout);
-                    if (strout != null)
-                        return;
-                    gameNameSteam = "HoneyCome_come_come_party";
-                }
-
-                try
-                {
-                    var steamLoc = new Steam().FindAppPathIfInstalled(gameNameSteam);
-                    if (Directory.Exists(steamLoc))
-                    {
-                        strout = steamLoc;
-                        return;
-                    }
-                }
-                catch (Exception e)
-                {
-                    Util.AppendLog(srcPath, e);
-                }
-            }
-
             try
             {
+                if (!string.IsNullOrEmpty(companyName))
+                {
+                    strout = CheckRegistryKey(srcPath, companyName, gameName) ?? CheckRegistryKey(srcPath, companyName, gameNameSteam);
+                    if (strout != null) return;
+                }
+
+                if (!string.IsNullOrEmpty(gameNameSteam))
+                {
+                    // HACK: The only game that has different Steam folder name than executable (so far)
+                    if (gameNameSteam == "HoneyComeccp")
+                    {
+                        //// HACK: Also need to handle DC somehow
+                        // this hard crashes
+                        //FindInstallLocation(srcPath, companyName, "DigitalCraft", "", out strout);
+                        //if (strout != null)
+                        //    return;
+                        gameNameSteam = "HoneyCome_come_come_party";
+                    }
+
+                    try
+                    {
+                        var steamLoc = new Steam().FindAppPathIfInstalled(gameNameSteam);
+                        if (Directory.Exists(steamLoc))
+                        {
+                            strout = steamLoc;
+                            return;
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        Util.AppendLog(srcPath, e);
+                    }
+                }
+
                 var bruteForcePath = new[]
                     {
                         new DirectoryInfo(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFiles)),
