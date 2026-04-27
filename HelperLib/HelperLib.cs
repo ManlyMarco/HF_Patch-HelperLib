@@ -591,6 +591,7 @@ icacls ""%target%"" /grant *S-1-1-0:(OI)(CI)F /T /C /L /Q
                 var listFileDirs = new[] {
                     @"abdata\list\characustom", // All games
                     @"abdata\h\list",           // KK,EC,KKS
+                    @"abdata\housing\info",     // AI-Shoujo
                     @"abdata\studio\info",      // Illusion studio
                     @"abdata\craft\info",       // Illgames studio
                     @"lib\list\characustom",    // Aicomi
