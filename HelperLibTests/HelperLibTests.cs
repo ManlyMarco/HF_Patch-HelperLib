@@ -57,5 +57,12 @@ namespace HelperLib.Tests
             if (!Directory.Exists(party))
                 Assert.Fail("Koikatsu Party path does not exist: " + party);
         }
+
+        [Test]
+        public void TestInstallLocationTest()
+        {
+            HelperLib.TestInstallLocation(@"F:\Games\HoneyCoom", @"F:\Games\HoneyCoom\test", "AI-Syoujyo", "AI-Shoujo", out string error, out var warn );
+            Assert.Fail();
+        }
     }
 }
