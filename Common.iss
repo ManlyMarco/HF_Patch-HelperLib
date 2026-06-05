@@ -32,7 +32,7 @@ WizardImageFile=banner.bmp
 SetupIconFile={#__DIR__}\icon.ico
 InfoBeforeFile=INFO.rtf
 InfoAfterFile=Plugin Readme.md
-LicenseFile=LICENSE_page
+LicenseFile={#__DIR__}\LICENSE_binaries
 
 DisableWelcomePage=no
 
