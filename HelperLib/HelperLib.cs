@@ -35,6 +35,7 @@ namespace HelperLib
                                                [MarshalAs(UnmanagedType.LPWStr)] string gameNameSteam,
                                                [MarshalAs(UnmanagedType.BStr)] out string strout)
         {
+            // TODO: Also need to handle DC somehow
             try
             {
                 if (!string.IsNullOrEmpty(companyName))
@@ -45,16 +46,11 @@ namespace HelperLib
 
                 if (!string.IsNullOrEmpty(gameNameSteam))
                 {
-                    // HACK: The only game that has different Steam folder name than executable (so far)
+                    // HACK: The game has different Steam folder name than registry key
                     if (gameNameSteam == "HoneyComeccp")
-                    {
-                        //// HACK: Also need to handle DC somehow
-                        // this hard crashes
-                        //FindInstallLocation(srcPath, companyName, "DigitalCraft", "", out strout);
-                        //if (strout != null)
-                        //    return;
                         gameNameSteam = "HoneyCome_come_come_party";
-                    }
+                    else if (gameNameSteam == "HoneySelect2_Steam") 
+                        gameNameSteam = "HoneySelect2Libido DX";
 
                     try
                     {
