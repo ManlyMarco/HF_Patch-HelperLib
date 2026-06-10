@@ -14,6 +14,7 @@
 		<ImportWindowsDesktopTargets>true</ImportWindowsDesktopTargets>
 
 		<DebugSymbols>false</DebugSymbols>
+	    <DebugType>embedded</DebugType>
 		<CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
 
 		<AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
