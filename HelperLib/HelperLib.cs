@@ -41,7 +41,11 @@ namespace HelperLib
                 if (!string.IsNullOrEmpty(companyName))
                 {
                     strout = CheckRegistryKey(srcPath, companyName, gameName) ?? CheckRegistryKey(srcPath, companyName, gameNameSteam);
-                    if (strout != null) return;
+                    if (strout != null)
+                    {
+                        if (!gameName.Equals("DigitalCraft") || File.Exists(Path.Combine(strout, "DigitalCraft\\DigitalCraft.exe")))
+                            return;
+                    }
                 }
 
                 if (!string.IsNullOrEmpty(gameNameSteam))
@@ -49,7 +53,7 @@ namespace HelperLib
                     // HACK: The game has different Steam folder name than registry key
                     if (gameNameSteam == "HoneyComeccp")
                         gameNameSteam = "HoneyCome_come_come_party";
-                    else if (gameNameSteam == "HoneySelect2_Steam") 
+                    else if (gameNameSteam == "HoneySelect2_Steam")
                         gameNameSteam = "HoneySelect2Libido DX";
 
                     try
@@ -58,7 +62,8 @@ namespace HelperLib
                         if (Directory.Exists(steamLoc))
                         {
                             strout = steamLoc;
-                            return;
+                            if (!gameName.Equals("DigitalCraft") || File.Exists(Path.Combine(strout, "DigitalCraft\\DigitalCraft.exe")))
+                                return;
                         }
                     }
                     catch (Exception e)
@@ -183,7 +188,7 @@ namespace HelperLib
                     "Aicomi"
                 };
 
-                if (gameName.Equals("HoneyCome") && File.Exists(Path.Combine(appPath, "DigitalCraft\\DigitalCraft.exe")))
+                if (gameName.Equals("DigitalCraft") && File.Exists(Path.Combine(appPath, "DigitalCraft\\DigitalCraft.exe")))
                     goto OverrideGameName;
 
                 if (!files.Contains(gameName, StringComparer.OrdinalIgnoreCase) && (string.IsNullOrEmpty(gameNameSteam) || !files.Contains(gameNameSteam, StringComparer.OrdinalIgnoreCase)))
