@@ -188,8 +188,21 @@ namespace HelperLib
                     "Aicomi"
                 };
 
-                if (gameName.Equals("DigitalCraft") && File.Exists(Path.Combine(appPath, "DigitalCraft\\DigitalCraft.exe")))
-                    goto OverrideGameName;
+                if (gameName.Equals("DigitalCraft"))
+                {
+                    if (File.Exists(Path.Combine(appPath, "DigitalCraft\\DigitalCraft.exe")))
+                    {
+                        allGameExes.Remove("HoneyCome");
+                        allGameExes.Remove("HoneyComeccp");
+                        goto OverrideGameName;
+                    }
+
+                    if (File.Exists(Path.Combine(appPath, "DigitalCraft.exe")))
+                    {
+                        errorStr = $"You have to pick the root folder, not the folder containing DigitalCraft.exe! You should see the folders \"abdata\", \"DefaultData\", \"DigitalCraft\" etc.";
+                        return;
+                    }
+                }
 
                 if (!files.Contains(gameName, StringComparer.OrdinalIgnoreCase) && (string.IsNullOrEmpty(gameNameSteam) || !files.Contains(gameNameSteam, StringComparer.OrdinalIgnoreCase)))
                 {
