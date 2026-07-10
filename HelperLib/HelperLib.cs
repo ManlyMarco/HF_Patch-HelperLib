@@ -259,6 +259,7 @@ namespace HelperLib
         [DllExport("WriteVersionFile", CallingConvention = CallingConvention.StdCall)]
         public static void WriteVersionFile([MarshalAs(UnmanagedType.LPWStr)] string appPath,
                                             [MarshalAs(UnmanagedType.LPWStr)] string srcPath,
+                                            [MarshalAs(UnmanagedType.LPWStr)] string patchName,
                                             [MarshalAs(UnmanagedType.LPWStr)] string version)
         {
             var verPath = Path.Combine(appPath, @"version");
@@ -266,7 +267,7 @@ namespace HelperLib
             {
                 // Prevent exception when overwriting hidden file
                 if (File.Exists(verPath)) File.SetAttributes(verPath, FileAttributes.Normal);
-                File.WriteAllText(verPath, @"HF Patch v" + version);
+                File.WriteAllText(verPath, $@"{patchName}HF Patch v{version}");
                 File.SetAttributes(verPath, FileAttributes.Hidden | FileAttributes.Archive);
             }
             catch (Exception e)

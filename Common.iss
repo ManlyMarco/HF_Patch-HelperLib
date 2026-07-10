@@ -110,7 +110,7 @@ external 'TestInstallLocation@files:HelperLib.dll stdcall';
 procedure CreateBackup(appPath, srcPath: String);
 external 'CreateBackup@files:HelperLib.dll stdcall';
 
-procedure WriteVersionFile(appPath, srcPath, version: String);
+procedure WriteVersionFile(appPath, srcPath, patchName, version: String);
 external 'WriteVersionFile@files:HelperLib.dll stdcall';
 
 procedure FixPermissions(appPath, srcPath: String);
@@ -214,7 +214,7 @@ begin
   if CurStep = ssPostInstall then
   begin
     try
-      WriteVersionFile(ExpandConstant('{app}'), ExpandConstant('{src}'), '{#VERSION}');
+      WriteVersionFile(ExpandConstant('{app}'), ExpandConstant('{src}'), '{#NAME}', '{#VERSION}');
       DeleteFile(ExpandConstant('{app}\changelog.txt'));
     except
       ShowExceptionMessage();
